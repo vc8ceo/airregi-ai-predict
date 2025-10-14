@@ -105,22 +105,22 @@ export async function POST(request: Request) {
         row_count: rowCount,
         upload_id: uploadRecord.id,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Update upload history with error
       await supabase
         .from('upload_history')
         .update({
           status: 'failed',
-          error_message: error.message,
+          error_message: error instanceof Error ? error.message : 'Unknown error',
         })
         .eq('id', uploadRecord.id)
 
       throw error
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Upload error:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }
