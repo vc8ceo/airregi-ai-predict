@@ -63,8 +63,8 @@ export default function PredictionPage() {
 
       const data = await response.json()
       setPrediction(data)
-    } catch (err: any) {
-      setError(err.message || '予測の実行中にエラーが発生しました')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '予測の実行中にエラーが発生しました')
     } finally {
       setLoading(false)
     }
