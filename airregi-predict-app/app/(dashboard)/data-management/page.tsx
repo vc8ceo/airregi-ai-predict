@@ -49,7 +49,7 @@ export default function DataManagementPage() {
 
       console.log(`Fetched upload history at ${timestamp}:`, data)
       setUploadHistory(data || [])
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching upload history:', err)
     } finally {
       setLoading(false)
@@ -155,8 +155,8 @@ export default function DataManagementPage() {
             successCount++
             totalRows += result.row_count || 0
           }
-        } catch (err: any) {
-          errors.push(`${file.name}: ${err.message || 'アップロード中にエラーが発生しました'}`)
+        } catch (err: unknown) {
+          errors.push(`${file.name}: ${err instanceof Error ? err.message : 'アップロード中にエラーが発生しました'}`)
         }
       }
 
@@ -196,8 +196,8 @@ export default function DataManagementPage() {
 
       // Refresh upload history
       await fetchUploadHistory()
-    } catch (err: any) {
-      setError(err.message || 'アップロード中にエラーが発生しました')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'アップロード中にエラーが発生しました')
       setUploadProgress('')
     } finally {
       setUploading(false)
@@ -286,9 +286,9 @@ export default function DataManagementPage() {
 
       // Show success message after refresh
       setSuccess(`${fileName} を削除しました`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Delete error:', err)
-      setError(err.message || '削除中にエラーが発生しました')
+      setError(err instanceof Error ? err.message : '削除中にエラーが発生しました')
       // If delete failed, refresh to show current state
       await fetchUploadHistory()
     } finally {

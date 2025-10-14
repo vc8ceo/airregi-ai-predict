@@ -55,8 +55,8 @@ export default function SignupPage() {
         router.push('/dashboard')
         router.refresh()
       }
-    } catch (error: any) {
-      setError(error.message || '登録に失敗しました')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : '登録に失敗しました')
     } finally {
       setLoading(false)
     }
@@ -75,8 +75,8 @@ export default function SignupPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message || 'Google認証に失敗しました')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Google認証に失敗しました')
       setLoading(false)
     }
   }

@@ -22,7 +22,12 @@ async function getDashboardData(userId: string) {
   return { dailyData: dailyData || [] }
 }
 
-function calculateKPIs(dailyData: any[]) {
+interface DailyData {
+  visitor_count: number
+  sales_amount: string | number
+}
+
+function calculateKPIs(dailyData: DailyData[]) {
   if (dailyData.length === 0) {
     return {
       totalVisitors: 0,

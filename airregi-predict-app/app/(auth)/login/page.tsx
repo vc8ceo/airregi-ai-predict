@@ -28,8 +28,8 @@ export default function LoginPage() {
 
       router.push('/dashboard')
       router.refresh()
-    } catch (error: any) {
-      setError(error.message || 'ログインに失敗しました')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'ログインに失敗しました')
     } finally {
       setLoading(false)
     }
@@ -48,8 +48,8 @@ export default function LoginPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message || 'Google認証に失敗しました')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Google認証に失敗しました')
       setLoading(false)
     }
   }
