@@ -104,10 +104,14 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete the upload history record
-    const { error: deleteUploadError } = await supabase
+    console.log('[DELETE] Attempting to delete upload_history record with id:', upload_id)
+    const { data: deleteData, error: deleteUploadError } = await supabase
       .from('upload_history')
       .delete()
       .eq('id', upload_id)
+      .select()
+
+    console.log('[DELETE] Delete result:', { deleteData, deleteUploadError })
 
     if (deleteUploadError) {
       console.error('Error deleting upload history:', deleteUploadError)
@@ -117,9 +121,21 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    // Check if anything was actually deleted
+    if (!deleteData || deleteData.length === 0) {
+      console.warn('[DELETE] No rows were deleted from upload_history')
+      return NextResponse.json(
+        { error: 'No records were deleted. Check RLS policies.' },
+        { status: 500 }
+      )
+    }
+
+    console.log('[DELETE] Successfully deleted upload_history record:', deleteData)
+
     return NextResponse.json({
       success: true,
       message: 'Upload data deleted successfully',
+      deleted_count: deleteData.length,
     })
   } catch (error: unknown) {
     console.error('Error in delete-upload API:', error)

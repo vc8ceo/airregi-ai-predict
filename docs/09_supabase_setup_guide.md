@@ -230,6 +230,20 @@ CREATE POLICY "Users can view own upload history"
 CREATE POLICY "Users can insert own upload history"
   ON upload_history FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own upload history"
+  ON upload_history FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own upload history"
+  ON upload_history FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- daily_aggregated テーブルのDELETEポリシー
+CREATE POLICY "Users can delete own aggregated data"
+  ON daily_aggregated FOR DELETE
+  USING (auth.uid() = user_id);
 ```
 
 ## 4. 認証の設定

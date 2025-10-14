@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import YearlyHeatmapCalendar from '@/components/YearlyHeatmapCalendar'
 
 interface UploadHistory {
   id: number
@@ -22,10 +23,13 @@ export default function DataManagementPage() {
   const [loading, setLoading] = useState(true)
   const [uploadProgress, setUploadProgress] = useState<string>('')
   const [deleting, setDeleting] = useState<number | null>(null)
+  const [journalDates, setJournalDates] = useState<string[]>([])
+  const [loadingDates, setLoadingDates] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
     fetchUploadHistory()
+    fetchJournalDates()
   }, [])
 
   const fetchUploadHistory = async () => {
@@ -53,6 +57,24 @@ export default function DataManagementPage() {
       console.error('Error fetching upload history:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchJournalDates = async () => {
+    try {
+      setLoadingDates(true)
+      const response = await fetch('/api/journal-dates')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch journal dates')
+      }
+
+      const data = await response.json()
+      setJournalDates(data.dates || [])
+    } catch (err: unknown) {
+      console.error('Error fetching journal dates:', err)
+    } finally {
+      setLoadingDates(false)
     }
   }
 
@@ -194,8 +216,9 @@ export default function DataManagementPage() {
         fileInput.value = ''
       }
 
-      // Refresh upload history
+      // Refresh upload history and journal dates
       await fetchUploadHistory()
+      await fetchJournalDates()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'アップロード中にエラーが発生しました')
       setUploadProgress('')
@@ -282,6 +305,7 @@ export default function DataManagementPage() {
       // Then refresh from server to ensure consistency
       setTimeout(async () => {
         await fetchUploadHistory()
+        await fetchJournalDates()
       }, 100)
 
       // Show success message after refresh
@@ -619,6 +643,47 @@ export default function DataManagementPage() {
               </h3>
               <p className="mt-1 text-sm text-gray-500">
                 まだファイルをアップロードしていません
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Journal Calendar */}
+      <div className="bg-white shadow rounded-lg mt-6">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium text-gray-900">ジャーナルデータカレンダー</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            緑色でハイライトされた日付にジャーナルデータが存在します
+          </p>
+        </div>
+        <div className="p-6">
+          {loadingDates ? (
+            <div className="text-center text-gray-500 py-8">
+              カレンダーを読み込み中...
+            </div>
+          ) : journalDates.length > 0 ? (
+            <YearlyHeatmapCalendar highlightedDates={journalDates} />
+          ) : (
+            <div className="text-center py-8">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                ジャーナルデータなし
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                CSVファイルをアップロードすると、データのある日付がカレンダーに表示されます
               </p>
             </div>
           )}

@@ -132,8 +132,17 @@ npm run lint
 - `(dashboard)` group - Protected pages with shared [layout.tsx](airregi-predict-app/app/(dashboard)/layout.tsx) (nav, logout button)
   - [dashboard](airregi-predict-app/app/(dashboard)/dashboard/page.tsx) - KPI metrics and overview
   - [prediction](airregi-predict-app/app/(dashboard)/prediction/page.tsx) - Run predictions
-  - [data-management](airregi-predict-app/app/(dashboard)/data-management/page.tsx) - Upload/manage CSV data
+  - [data-management](airregi-predict-app/app/(dashboard)/data-management/page.tsx) - Upload/manage CSV data with yearly heatmap calendar
 - Root [/page.tsx](airregi-predict-app/app/page.tsx) redirects based on auth state
+
+### UI Components
+
+**Key Reusable Components:**
+- [YearlyHeatmapCalendar.tsx](airregi-predict-app/components/YearlyHeatmapCalendar.tsx) - GitHub-style contribution calendar showing all 12 months with year navigation
+  - Props: `highlightedDates: string[]` (array of 'YYYY-MM-DD' formatted dates)
+  - Automatically detects available years from highlighted dates
+  - Responsive grid layout (1-4 columns based on screen size)
+  - Green highlighting for dates with data
 
 ## Critical Implementation Details
 
@@ -179,6 +188,44 @@ Upload API route pattern ([app/api/upload/route.ts](airregi-predict-app/app/api/
 4. Batch insert into journal_data (max 1000 rows per batch)
 5. Update upload_history status='success' with row_count
 6. On error: status='failed' with error_message
+
+### Supabase Query Limitations and Pagination
+
+**Critical**: Supabase `.select()` queries have a **default limit of 1000 rows**. When querying tables with more than 1000 records, you must use pagination with `.range()`:
+
+```typescript
+// ✗ WRONG - Only fetches first 1000 records
+const { data } = await supabase
+  .from('journal_data')
+  .select('sales_date')
+  .eq('user_id', userId)
+
+// ✓ CORRECT - Fetch all records with pagination
+let allData: Array<{ sales_date: string }> = []
+let rangeStart = 0
+const rangeSize = 1000
+let hasMore = true
+
+while (hasMore) {
+  const { data: batch, error } = await supabase
+    .from('journal_data')
+    .select('sales_date')
+    .eq('user_id', userId)
+    .range(rangeStart, rangeStart + rangeSize - 1)
+
+  if (error) throw error
+
+  if (!batch || batch.length === 0) {
+    hasMore = false
+  } else {
+    allData = allData.concat(batch)
+    hasMore = batch.length === rangeSize
+    rangeStart += rangeSize
+  }
+}
+```
+
+**Best Practice**: For large datasets, prefer using Postgres RPC functions with `DISTINCT` or aggregation queries instead of fetching all records client-side.
 
 ### Supabase RLS Policies
 
@@ -258,9 +305,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 4. **Middleware Order**: Supabase middleware must call `getUser()` before any logic
 5. **RLS Policies**: Always test with multiple user accounts to verify data isolation
 6. **Batch Inserts**: Supabase has limits - use batches of 1000 rows max
-7. **TypeScript Paths**: Always use `@/*` imports for absolute paths in Next.js
-8. **TypeScript Error Handling**: Never use `error: any`, always use `error: unknown` with type guards
-9. **Vercel Deployment**: Do not create a `vercel.json` if the project rootDirectory is already set in project settings
+7. **Supabase Query Limits**: Default `.select()` limit is 1000 rows - use `.range()` pagination for larger datasets
+8. **TypeScript Paths**: Always use `@/*` imports for absolute paths in Next.js
+9. **TypeScript Error Handling**: Never use `error: any`, always use `error: unknown` with type guards
+10. **Vercel Deployment**: Do not create a `vercel.json` if the project rootDirectory is already set in project settings
+11. **Turbopack Hot Reload**: API routes may not hot-reload properly - restart dev server if changes don't take effect
 
 ## Project Status
 
@@ -270,10 +319,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - ✅ Complete Next.js application with auth, dashboard, prediction, data management
 - ✅ Supabase integration with RLS policies
 - ✅ TypeScript database types
-- ✅ API routes for prediction and upload
+- ✅ API routes for prediction, upload, and delete
+- ✅ Yearly heatmap calendar for visualizing journal data dates
+- ✅ CSV upload with progress tracking and error handling
 - ✅ Comprehensive documentation (9 markdown files)
 - ✅ Production deployment on Vercel (auto-deploy from main branch)
 - ✅ Type-safe error handling throughout Next.js app
+- ✅ Pagination support for large Supabase queries
 
 **Not Yet Implemented:**
 - ⏳ FastAPI ML prediction service
@@ -299,6 +351,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## Recent Changes
 
+- **2025-10-14**: Fixed Supabase query pagination bug in journal-dates API (was only fetching 1000 of 36,820 records)
+- **2025-10-14**: Added yearly heatmap calendar component for visualizing journal data availability
 - **2025-01-14**: Successfully deployed to Vercel with auto-deployment from main branch
 - **2025-01-14**: Fixed all TypeScript ESLint errors (replaced `any` with `unknown` + type guards)
 - **2025-01-14**: Added type safety for `sales_amount` handling (string | number union type)
