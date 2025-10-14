@@ -38,7 +38,10 @@ function calculateKPIs(dailyData: DailyData[]) {
   }
 
   const totalVisitors = dailyData.reduce((sum, day) => sum + day.visitor_count, 0)
-  const totalSales = dailyData.reduce((sum, day) => sum + parseFloat(day.sales_amount), 0)
+  const totalSales = dailyData.reduce(
+    (sum, day) => sum + (typeof day.sales_amount === 'number' ? day.sales_amount : parseFloat(day.sales_amount)),
+    0
+  )
   const avgDailyVisitors = totalVisitors / dailyData.length
   const avgPerCustomer = totalSales / totalVisitors
 
