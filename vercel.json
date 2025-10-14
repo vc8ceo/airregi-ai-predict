@@ -1,8 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd airregi-predict-app && npm run build",
-  "devCommand": "cd airregi-predict-app && npm run dev",
-  "installCommand": "cd airregi-predict-app && npm install",
-  "framework": "nextjs",
-  "outputDirectory": "airregi-predict-app/.next"
-}
