@@ -22,6 +22,8 @@ export default function DataManagementPage() {
   const [uploadHistory, setUploadHistory] = useState<UploadHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [uploadProgress, setUploadProgress] = useState<string>('')
+  const [uploadPercentage, setUploadPercentage] = useState<number>(0)
+  const [currentFileName, setCurrentFileName] = useState<string>('')
   const [deleting, setDeleting] = useState<number | null>(null)
   const [journalDates, setJournalDates] = useState<string[]>([])
   const [loadingDates, setLoadingDates] = useState(true)
@@ -31,6 +33,26 @@ export default function DataManagementPage() {
     fetchUploadHistory()
     fetchJournalDates()
   }, [])
+
+  // Auto-dismiss success message after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
+
+  // Auto-dismiss error message after 8 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null)
+      }, 8000)
+      return () => clearTimeout(timer)
+    }
+  }, [error])
 
   const fetchUploadHistory = async () => {
     try {
@@ -113,6 +135,8 @@ export default function DataManagementPage() {
     setError(null)
     setSuccess(null)
     setUploadProgress('')
+    setUploadPercentage(0)
+    setCurrentFileName('')
 
     try {
       const {
@@ -155,8 +179,13 @@ export default function DataManagementPage() {
 
       for (let i = 0; i < filesToUpload.length; i++) {
         const file = filesToUpload[i]
+        const currentFileNumber = i + 1
+        const percentage = Math.round((currentFileNumber / filesToUpload.length) * 100)
+
+        setCurrentFileName(file.name)
+        setUploadPercentage(percentage)
         setUploadProgress(
-          `${i + 1}/${filesToUpload.length} ファイルをアップロード中: ${file.name}`
+          `${currentFileNumber}/${filesToUpload.length} ファイルをアップロード中`
         )
 
         try {
@@ -209,6 +238,8 @@ export default function DataManagementPage() {
 
       setFiles([])
       setUploadProgress('')
+      setUploadPercentage(0)
+      setCurrentFileName('')
 
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement
@@ -222,6 +253,8 @@ export default function DataManagementPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'アップロード中にエラーが発生しました')
       setUploadProgress('')
+      setUploadPercentage(0)
+      setCurrentFileName('')
     } finally {
       setUploading(false)
     }
@@ -337,7 +370,7 @@ export default function DataManagementPage() {
 
         <div className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
+            <div className="rounded-md bg-red-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -354,16 +387,27 @@ export default function DataManagementPage() {
                     />
                   </svg>
                 </div>
-                <div className="ml-3">
+                <div className="ml-3 flex-1">
                   <h3 className="text-sm font-medium text-red-800">エラー</h3>
-                  <p className="mt-2 text-sm text-red-700">{error}</p>
+                  <p className="mt-2 text-sm text-red-700 whitespace-pre-line">{error}</p>
+                </div>
+                <div className="ml-auto pl-3">
+                  <button
+                    onClick={() => setError(null)}
+                    className="inline-flex rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
+                  >
+                    <span className="sr-only">閉じる</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
           {success && (
-            <div className="rounded-md bg-green-50 p-4">
+            <div className="rounded-md bg-green-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -380,8 +424,19 @@ export default function DataManagementPage() {
                     />
                   </svg>
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm text-green-700">{success}</p>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm text-green-700 whitespace-pre-line">{success}</p>
+                </div>
+                <div className="ml-auto pl-3">
+                  <button
+                    onClick={() => setSuccess(null)}
+                    className="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
+                  >
+                    <span className="sr-only">閉じる</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -486,7 +541,23 @@ export default function DataManagementPage() {
               )}
             </button>
             {uploadProgress && (
-              <p className="mt-2 text-sm text-blue-600">{uploadProgress}</p>
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600 font-medium">{uploadProgress}</span>
+                  <span className="text-blue-600 font-semibold">{uploadPercentage}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadPercentage}%` }}
+                  ></div>
+                </div>
+                {currentFileName && (
+                  <p className="text-xs text-gray-600 truncate">
+                    処理中: {currentFileName}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -516,6 +587,47 @@ export default function DataManagementPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Journal Calendar */}
+      <div className="bg-white shadow rounded-lg mb-6">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium text-gray-900">ジャーナルデータカレンダー</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            緑色でハイライトされた日付にジャーナルデータが存在します
+          </p>
+        </div>
+        <div className="p-6">
+          {loadingDates ? (
+            <div className="text-center text-gray-500 py-8">
+              カレンダーを読み込み中...
+            </div>
+          ) : journalDates.length > 0 ? (
+            <YearlyHeatmapCalendar highlightedDates={journalDates} />
+          ) : (
+            <div className="text-center py-8">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                ジャーナルデータなし
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                CSVファイルをアップロードすると、データのある日付がカレンダーに表示されます
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -643,47 +755,6 @@ export default function DataManagementPage() {
               </h3>
               <p className="mt-1 text-sm text-gray-500">
                 まだファイルをアップロードしていません
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Journal Calendar */}
-      <div className="bg-white shadow rounded-lg mt-6">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">ジャーナルデータカレンダー</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            緑色でハイライトされた日付にジャーナルデータが存在します
-          </p>
-        </div>
-        <div className="p-6">
-          {loadingDates ? (
-            <div className="text-center text-gray-500 py-8">
-              カレンダーを読み込み中...
-            </div>
-          ) : journalDates.length > 0 ? (
-            <YearlyHeatmapCalendar highlightedDates={journalDates} />
-          ) : (
-            <div className="text-center py-8">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                ジャーナルデータなし
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                CSVファイルをアップロードすると、データのある日付がカレンダーに表示されます
               </p>
             </div>
           )}

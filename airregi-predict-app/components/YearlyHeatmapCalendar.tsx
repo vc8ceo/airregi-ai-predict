@@ -50,8 +50,8 @@ export default function YearlyHeatmapCalendar({ highlightedDates = [] }: YearlyH
 
       // Add all days of the month
       for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(selectedYear, month, day)
-        const dateStr = date.toISOString().split('T')[0]
+        // Create date string directly to avoid timezone conversion issues
+        const dateStr = `${selectedYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
         const hasData = journalDatesSet.has(dateStr)
         days.push({
           day,
@@ -186,7 +186,7 @@ export default function YearlyHeatmapCalendar({ highlightedDates = [] }: YearlyH
         <div className="text-sm text-gray-600">
           {totalDaysWithData > 0 ? (
             <>
-              <span className="font-semibold text-green-600">{totalDaysWithData}</span> 日分のデータ
+              <span className="font-semibold text-green-600">{totalDaysWithData}</span> 日分のデータ（{selectedYear}年）
             </>
           ) : (
             <span className="text-gray-400">{selectedYear}年のデータなし</span>
