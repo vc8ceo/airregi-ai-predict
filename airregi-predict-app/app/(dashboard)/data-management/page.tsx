@@ -356,15 +356,15 @@ export default function DataManagementPage() {
   return (
     <div className="px-4 sm:px-0">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">データ管理</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">データ管理</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
           ジャーナル履歴CSVファイルをアップロードして予測モデルに反映させます
         </p>
       </div>
 
       {/* Upload Section */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           ジャーナル履歴CSVアップロード
         </h2>
 
@@ -445,7 +445,7 @@ export default function DataManagementPage() {
           <div>
             <label
               htmlFor="file-upload"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
               CSVファイルを選択（複数選択可）
             </label>
@@ -455,21 +455,23 @@ export default function DataManagementPage() {
               accept=".csv"
               multiple
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500
+              className="block w-full text-sm text-gray-500 dark:text-gray-400
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-md file:border-0
                 file:text-sm file:font-semibold
                 file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
+                hover:file:bg-blue-100
+                dark:file:bg-blue-900/20 dark:file:text-blue-400
+                dark:hover:file:bg-blue-900/30"
             />
             {files.length > 0 && (
               <div className="mt-3 space-y-2">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   選択されたファイル ({files.length}個):
                 </p>
                 <ul className="space-y-1">
                   {files.map((f, index) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-center">
+                    <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                       <svg
                         className="h-4 w-4 text-green-500 mr-2"
                         fill="none"
@@ -540,8 +542,10 @@ export default function DataManagementPage() {
                 </>
               )}
             </button>
-            {uploadProgress && (
-              <div className="mt-4 space-y-2">
+          </div>
+
+          {uploadProgress && (
+            <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-blue-600 font-medium">{uploadProgress}</span>
                   <span className="text-blue-600 font-semibold">{uploadPercentage}%</span>
@@ -557,11 +561,10 @@ export default function DataManagementPage() {
                     処理中: {currentFileName}
                   </p>
                 )}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
@@ -579,7 +582,7 @@ export default function DataManagementPage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
                   Airレジからエクスポートしたジャーナル履歴CSVファイルをアップロードしてください。
                   複数のファイルを一度に選択してアップロードできます。
                   データは自動的に処理され、予測モデルの精度向上に使用されます。
@@ -591,16 +594,16 @@ export default function DataManagementPage() {
       </div>
 
       {/* Journal Calendar */}
-      <div className="bg-white shadow rounded-lg mb-6">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">ジャーナルデータカレンダー</h2>
-          <p className="mt-1 text-sm text-gray-600">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">ジャーナルカレンダー</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             緑色でハイライトされた日付にジャーナルデータが存在します
           </p>
         </div>
         <div className="p-6">
           {loadingDates ? (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
               カレンダーを読み込み中...
             </div>
           ) : journalDates.length > 0 ? (
@@ -608,7 +611,7 @@ export default function DataManagementPage() {
           ) : (
             <div className="text-center py-8">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -620,10 +623,10 @@ export default function DataManagementPage() {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
                 ジャーナルデータなし
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 CSVファイルをアップロードすると、データのある日付がカレンダーに表示されます
               </p>
             </div>
@@ -632,53 +635,53 @@ export default function DataManagementPage() {
       </div>
 
       {/* Upload History */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">アップロード履歴</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">アップロードデータ</h2>
         </div>
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">読み込み中...</div>
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">読み込み中...</div>
           ) : uploadHistory.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     ファイル名
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     サイズ
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     行数
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     ステータス
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     アップロード日時
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     操作
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {uploadHistory.map((upload) => (
                   <tr key={upload.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {upload.file_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatFileSize(upload.file_size)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {upload.row_count?.toLocaleString() || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(upload.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(upload.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -738,7 +741,7 @@ export default function DataManagementPage() {
           ) : (
             <div className="p-8 text-center">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -750,10 +753,10 @@ export default function DataManagementPage() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
                 アップロード履歴なし
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 まだファイルをアップロードしていません
               </p>
             </div>

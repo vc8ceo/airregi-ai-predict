@@ -23,18 +23,61 @@ interface PredictionResult {
     temp_min: number
     precipitation: number
   }
+  historical_average?: {
+    visitor_count: number | null
+    sales_amount: number | null
+    day_of_week: number
+  }
 }
 
 export default function PredictionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [prediction, setPrediction] = useState<PredictionResult | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  })
   const supabase = createClient()
+
+  // Helper function to get day of week name in Japanese
+  const getDayOfWeekName = (dayOfWeek: number) => {
+    const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日']
+    return days[dayOfWeek]
+  }
+
+  // Helper function to get weather icon
+  const getWeatherIcon = (condition: string) => {
+    const lowerCondition = condition.toLowerCase()
+
+    if (lowerCondition.includes('晴れ') || lowerCondition.includes('sunny')) {
+      return '☀️'
+    } else if (lowerCondition.includes('曇り') || lowerCondition.includes('cloudy')) {
+      return '☁️'
+    } else if (lowerCondition.includes('雨') || lowerCondition.includes('rain')) {
+      return '🌧️'
+    } else if (lowerCondition.includes('雪') || lowerCondition.includes('snow')) {
+      return '❄️'
+    }
+    return '⛅'
+  }
+
+  const getMinDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  }
+
+  const getMaxDate = () => {
+    const maxDate = new Date()
+    maxDate.setDate(maxDate.getDate() + 14)
+    return maxDate.toISOString().split('T')[0]
+  }
 
   const handlePredict = async () => {
     setLoading(true)
     setError(null)
-    setPrediction(null)
 
     try {
       const {
@@ -45,7 +88,6 @@ export default function PredictionPage() {
         throw new Error('ログインが必要です')
       }
 
-      // Call the prediction API
       const response = await fetch('/api/predict', {
         method: 'POST',
         headers: {
@@ -53,6 +95,7 @@ export default function PredictionPage() {
         },
         body: JSON.stringify({
           user_id: user.id,
+          prediction_date: selectedDate,
         }),
       })
 
@@ -71,215 +114,187 @@ export default function PredictionPage() {
   }
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="max-w-6xl mx-auto">
+      {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">来店者数・売上予測</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          機械学習モデルと天気予報を用いて次の営業日を予測します
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          来店者数・売上予測
+        </h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          AIモデルが天気予報と過去データから明日以降の来店者数と売上を予測します
         </p>
       </div>
 
-      {/* Predict Button */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
-        <div className="text-center">
+      {/* Prediction Input Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <label htmlFor="prediction-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          予測したい日付を選択
+        </label>
+        <div className="flex items-center gap-4">
+          <input
+            type="date"
+            id="prediction-date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            min={getMinDate()}
+            max={getMaxDate()}
+            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-base"
+          />
           <button
             onClick={handlePredict}
             disabled={loading}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg whitespace-nowrap"
           >
             {loading ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
                 予測中...
-              </>
+              </span>
             ) : (
-              <>
-                <svg
-                  className="-ml-1 mr-3 h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                予測を実行
-              </>
+              '予測を実行'
             )}
           </button>
         </div>
-
-        {error && (
-          <div className="mt-4 rounded-md bg-red-50 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">エラー</h3>
-                <p className="mt-2 text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          ※ 明日から14日先まで選択可能
+        </p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
 
       {/* Prediction Results */}
       {prediction && (
-        <div className="space-y-6">
-          {/* Prediction Date and Weather */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">予測日</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-500">対象日</p>
-                <p className="text-2xl font-semibold text-gray-900">
+        <div className="space-y-6 animate-fadeIn">
+          {/* Weather Card */}
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-6">
+              <div className="text-6xl flex-shrink-0">
+                {getWeatherIcon(prediction.weather_forecast.condition)}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                   {new Date(prediction.prediction_date).toLocaleDateString('ja-JP', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
                     weekday: 'long',
                   })}
+                </h3>
+                <p className="text-2xl text-gray-700 dark:text-gray-300 mb-3">
+                  {prediction.weather_forecast.condition}
                 </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">天気予報</p>
-                <div className="mt-1">
-                  <p className="text-lg font-medium text-gray-900">
-                    {prediction.weather_forecast.condition}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    最高気温: {prediction.weather_forecast.temp_max}°C / 最低気温:{' '}
-                    {prediction.weather_forecast.temp_min}°C
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    降水確率: {prediction.weather_forecast.precipitation}%
-                  </p>
+                <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
+                  <span>🌡️ {prediction.weather_forecast.temp_max}°C / {prediction.weather_forecast.temp_min}°C</span>
+                  <span>💧 降水確率 {prediction.weather_forecast.precipitation}%</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Visitor Count Prediction */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">来店者数予測</h2>
-            <div className="text-center py-8">
-              <p className="text-5xl font-bold text-blue-600">
-                {Math.round(prediction.predictions.visitor_count.value)}
-              </p>
-              <p className="text-lg text-gray-500 mt-2">人</p>
-              <div className="mt-4 text-sm text-gray-600">
-                <p>
-                  信頼区間: {Math.round(prediction.predictions.visitor_count.confidence_lower)} 〜{' '}
-                  {Math.round(prediction.predictions.visitor_count.confidence_upper)} 人
-                </p>
+          {/* Metrics Grid */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Visitor Prediction Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  来店者数予測
+                </h3>
+              </div>
+
+              <div className="text-center py-6">
+                <div className="text-5xl font-bold text-blue-600 dark:text-blue-400">
+                  {Math.round(prediction.predictions.visitor_count.value)}
+                  <span className="text-2xl ml-2 text-gray-600 dark:text-gray-400">人</span>
+                </div>
+
+                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  信頼区間: {Math.round(prediction.predictions.visitor_count.confidence_lower)}
+                  〜 {Math.round(prediction.predictions.visitor_count.confidence_upper)} 人
+                </div>
+
+                {prediction.historical_average?.visitor_count !== null && (
+                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      過去の{getDayOfWeekName(prediction.historical_average.day_of_week)}平均
+                    </p>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                      {prediction.historical_average.visitor_count}人
+                    </p>
+                    {(() => {
+                      const diff = Math.round(prediction.predictions.visitor_count.value) - (prediction.historical_average.visitor_count || 0)
+                      return (
+                        <p className={`text-lg font-bold mt-2 ${diff > 0 ? 'text-green-600 dark:text-green-400' : diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                          {diff > 0 ? '+' : ''}{diff}人
+                        </p>
+                      )
+                    })()}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sales Prediction Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  売上予測
+                </h3>
+              </div>
+
+              <div className="text-center py-6">
+                <div className="text-5xl font-bold text-green-600 dark:text-green-400">
+                  ¥{Math.round(prediction.predictions.sales_amount.value).toLocaleString()}
+                </div>
+
+                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  信頼区間: ¥{Math.round(prediction.predictions.sales_amount.confidence_lower).toLocaleString()}
+                  〜 ¥{Math.round(prediction.predictions.sales_amount.confidence_upper).toLocaleString()}
+                </div>
+
+                {prediction.historical_average?.sales_amount !== null && (
+                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      過去の{getDayOfWeekName(prediction.historical_average.day_of_week)}平均
+                    </p>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                      ¥{prediction.historical_average.sales_amount?.toLocaleString()}
+                    </p>
+                    {(() => {
+                      const diff = Math.round(prediction.predictions.sales_amount.value) - (prediction.historical_average.sales_amount || 0)
+                      return (
+                        <p className={`text-lg font-bold mt-2 ${diff > 0 ? 'text-green-600 dark:text-green-400' : diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                          {diff > 0 ? '+' : ''}¥{Math.abs(diff).toLocaleString()}
+                        </p>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Sales Amount Prediction */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">売上予測</h2>
-            <div className="text-center py-8">
-              <p className="text-5xl font-bold text-green-600">
-                ¥{Math.round(prediction.predictions.sales_amount.value).toLocaleString()}
-              </p>
-              <div className="mt-4 text-sm text-gray-600">
-                <p>
-                  信頼区間: ¥
-                  {Math.round(prediction.predictions.sales_amount.confidence_lower).toLocaleString()}{' '}
-                  〜 ¥
-                  {Math.round(prediction.predictions.sales_amount.confidence_upper).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Note */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          {/* Info Note */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-blue-700">
-                  この予測は機械学習モデルと天気予報に基づいて算出されています。
-                  実際の来店者数や売上は、イベントや特別な要因により変動する可能性があります。
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  この予測はAIモデルによる推定値です。実際の結果と異なる場合があります。
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!prediction && !loading && !error && (
-        <div className="bg-white shadow rounded-lg p-12">
-          <div className="text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">予測結果なし</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              「予測を実行」ボタンをクリックして予測を開始してください
-            </p>
           </div>
         </div>
       )}

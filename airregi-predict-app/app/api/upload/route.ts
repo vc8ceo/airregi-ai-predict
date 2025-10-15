@@ -90,8 +90,52 @@ export async function POST(request: Request) {
       }
 
       // Aggregate daily data
-      // In production, this should be done by a background job or ML API
-      // For now, we'll just mark as successful
+      // Get unique dates from uploaded data
+      const uniqueDates = [...new Set(rows.map((r) => r.sales_date).filter((d) => d))]
+
+      for (const dateStr of uniqueDates) {
+        // Get all journal data for this user and date
+        const { data: dayData, error: dayError } = await supabase
+          .from('journal_data')
+          .select('receipt_no, subtotal, tax_amount, sales_date')
+          .eq('user_id', user.id)
+          .eq('sales_date', dateStr)
+
+        if (!dayError && dayData && dayData.length > 0) {
+          // Calculate aggregates
+          const visitorCount = new Set(dayData.map((d) => d.receipt_no)).size
+          const salesAmount = dayData.reduce((sum, d) => {
+            const subtotal = typeof d.subtotal === 'number' ? d.subtotal : parseFloat(d.subtotal || '0')
+            const taxAmount = typeof d.tax_amount === 'number' ? d.tax_amount : parseFloat(d.tax_amount || '0')
+            return sum + subtotal + taxAmount
+          }, 0)
+          const avgPerCustomer = visitorCount > 0 ? salesAmount / visitorCount : 0
+
+          // Get day of week (0 = Sunday, 6 = Saturday)
+          const dayOfWeek = new Date(dateStr).getDay()
+
+          // Insert or update daily_aggregated
+          const { error: aggError } = await supabase
+            .from('daily_aggregated')
+            .upsert({
+              user_id: user.id,
+              date: dateStr,
+              visitor_count: visitorCount,
+              sales_amount: salesAmount,
+              avg_per_customer: avgPerCustomer,
+              day_of_week: dayOfWeek,
+              is_holiday: false,
+            }, {
+              onConflict: 'user_id,date',
+            })
+
+          if (aggError) {
+            console.error('Error aggregating data for date', dateStr, aggError)
+          }
+        }
+      }
+
+      // Mark upload as successful
       await supabase
         .from('upload_history')
         .update({

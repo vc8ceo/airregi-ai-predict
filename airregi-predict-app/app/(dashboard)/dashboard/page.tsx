@@ -69,20 +69,20 @@ export default async function DashboardPage() {
   return (
     <div className="px-4 sm:px-0">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ダッシュボード</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
           過去30日間の店舗データサマリー
         </p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-6 w-6 text-gray-400"
+                  className="h-6 w-6 text-gray-400 dark:text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -97,10 +97,10 @@ export default async function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     総来店者数
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">
+                  <dd className="text-lg font-semibold text-gray-900 dark:text-white">
                     {kpis.totalVisitors.toLocaleString()}人
                   </dd>
                 </dl>
@@ -109,12 +109,12 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-6 w-6 text-gray-400"
+                  className="h-6 w-6 text-gray-400 dark:text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -129,10 +129,10 @@ export default async function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     総売上
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">
+                  <dd className="text-lg font-semibold text-gray-900 dark:text-white">
                     ¥{kpis.totalSales.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </dd>
                 </dl>
@@ -141,12 +141,12 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-6 w-6 text-gray-400"
+                  className="h-6 w-6 text-gray-400 dark:text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -161,10 +161,10 @@ export default async function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     1日平均来店者数
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">
+                  <dd className="text-lg font-semibold text-gray-900 dark:text-white">
                     {kpis.avgDailyVisitors.toFixed(1)}人
                   </dd>
                 </dl>
@@ -173,12 +173,12 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-6 w-6 text-gray-400"
+                  className="h-6 w-6 text-gray-400 dark:text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -193,10 +193,10 @@ export default async function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     顧客単価
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">
+                  <dd className="text-lg font-semibold text-gray-900 dark:text-white">
                     ¥{isFinite(kpis.avgPerCustomer) ? kpis.avgPerCustomer.toFixed(0) : '0'}
                   </dd>
                 </dl>
@@ -209,33 +209,33 @@ export default async function DashboardPage() {
       {/* Charts Section */}
       {dailyData.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
             <div className="p-5">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 来店者数推移
               </h3>
-              <div className="h-64 flex items-center justify-center text-gray-500">
+              <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                 グラフは次の実装フェーズで追加予定
               </div>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
             <div className="p-5">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 売上推移
               </h3>
-              <div className="h-64 flex items-center justify-center text-gray-500">
+              <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                 グラフは次の実装フェーズで追加予定
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className="p-8 text-center">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -247,8 +247,8 @@ export default async function DashboardPage() {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">データがありません</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">データがありません</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               データ管理ページからジャーナル履歴CSVをアップロードしてください
             </p>
           </div>
